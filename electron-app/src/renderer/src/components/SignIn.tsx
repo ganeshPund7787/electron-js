@@ -1,8 +1,8 @@
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { Link } from 'react-router-dom'
-
+import { Link, useNavigate } from 'react-router-dom'
+import { useAuth } from '../context/AuthContext'
 const signInSchema = z.object({
   email: z.string().email('Invalid email address'),
   password: z.string().min(6, 'Password must be at least 6 characters')
@@ -10,7 +10,7 @@ const signInSchema = z.object({
 
 type SignInForm = z.infer<typeof signInSchema>
 
-export default function  SignIn() {
+export default function SignIn() {
   const {
     register,
     handleSubmit,
@@ -19,15 +19,22 @@ export default function  SignIn() {
     resolver: zodResolver(signInSchema)
   })
 
+  const { login } = useAuth()
+  const navigate = useNavigate()
   const onSubmit = async (data: SignInForm) => {
     try {
       const response = await window.electron.ipcRenderer.invoke('login-user', data)
-      alert(response.success ? 'Login successful!' : response.message)
-    } catch (error: any) {
-      alert('Login failed: ' + error.message)
+      if (response.success) {
+        login(response.token, response.user)
+        alert('Login successful!')
+        navigate('/')
+      } else {
+        alert(response.message)
+      }
+    } catch (err: any) {
+      alert('Login failed: ' + err.message)
     }
   }
-
   return (
     <div className="w-80 mx-auto bg-white shadow-lg rounded-xl p-8">
       <h2 className="text-2xl font-bold text-center text-gray-800 mb-6">Sign In</h2>
