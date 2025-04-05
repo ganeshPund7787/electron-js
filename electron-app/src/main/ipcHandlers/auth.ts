@@ -44,7 +44,7 @@ ipcMain.handle('login-user', async (_event, { email, password }) => {
       sameSite: 'lax',
       expirationDate: Math.floor(Date.now() / 1000) + 7200 // 2 hours expiry
     })
-
+    
     return { success: true, token }
   } catch (error: any) {
     return { success: false, message: error.message }
